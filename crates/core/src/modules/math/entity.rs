@@ -1,7 +1,16 @@
 //! Pure domain entity for math calculation history.
 
 /// Recorded addition operation.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+///
+/// # Examples
+///
+/// ```
+/// use template_core::modules::math::entity::CalculationEntry;
+///
+/// let entry = CalculationEntry { a: 1, b: 2, sum: 3 };
+/// assert_eq!(entry, entry);
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct CalculationEntry {
     /// Left addend.
     pub a: i64,

@@ -11,6 +11,17 @@ use repository::InMemoryMathRepository;
 use service::MathService;
 
 /// Assembled math module exposing the domain controller.
+///
+/// # Examples
+///
+/// ```
+/// use template_core::modules::math::MathModule;
+/// use template_core::modules::math::dto::MathError;
+///
+/// let mut module = MathModule::default();
+/// assert_eq!(module.controller.handle_add(1, 1)?.history_count, 1);
+/// # Ok::<(), MathError>(())
+/// ```
 #[derive(Debug)]
 pub struct MathModule {
     /// Controller handling math domain operations.
@@ -18,7 +29,7 @@ pub struct MathModule {
 }
 
 impl MathModule {
-    /// Wires `InMemoryMathRepository` -> `MathService` -> `MathController`.
+    /// Wires [`InMemoryMathRepository`], [`MathService`], and [`MathController`] together.
     #[must_use]
     pub fn new() -> Self {
         let repo = Box::new(InMemoryMathRepository::new());

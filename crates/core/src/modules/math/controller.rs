@@ -1,26 +1,38 @@
 //! Transport-facing controller for the math domain.
 
-use super::dto::{AddRequest, AddResponse};
+use super::dto::{AddRequest, AddResponse, MathError};
 use super::service::MathService;
 
-/// Entrypoint adapter delegating validated requests to `MathService`.
+/// Entrypoint adapter delegating validated requests to [`MathService`].
 #[derive(Debug)]
 pub struct MathController {
     service: MathService,
 }
 
 impl MathController {
-    /// Constructs a controller from a configured `MathService`.
+    /// Constructs a controller from a configured [`MathService`].
     #[must_use]
     pub const fn new(service: MathService) -> Self {
         Self { service }
     }
 
-    /// Handles an addition request and returns the formatted response.
+    /// Handles an addition request and returns the [`AddResponse`].
     ///
     /// # Errors
-    /// Propagates validation or arithmetic errors from `MathService`.
-    pub fn handle_add(&mut self, a: i64, b: i64) -> Result<AddResponse, &'static str> {
+    /// Propagates [`MathError`] from [`MathService`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use template_core::modules::math::MathModule;
+    /// use template_core::modules::math::dto::MathError;
+    ///
+    /// let mut module = MathModule::new();
+    /// let res = module.controller.handle_add(2, 3)?;
+    /// assert_eq!(res.sum, 5);
+    /// # Ok::<(), MathError>(())
+    /// ```
+    pub fn handle_add(&mut self, a: i64, b: i64) -> Result<AddResponse, MathError> {
         self.service.add(AddRequest { a, b })
     }
 }

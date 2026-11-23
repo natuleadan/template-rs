@@ -1,7 +1,75 @@
 //! Architecture boundary tests verifying crate isolation.
 
+use std::error::Error;
+use std::fmt::{Debug, Display};
 use std::fs;
+use std::hash::Hash;
 use std::path::Path;
+use template_core::modules::math::MathModule;
+use template_core::modules::math::controller::MathController;
+use template_core::modules::math::dto::{AddRequest, AddResponse, MathError};
+use template_core::modules::math::entity::CalculationEntry;
+use template_core::modules::math::repository::{InMemoryMathRepository, MathRepository};
+use template_core::modules::math::service::MathService;
+
+const fn assert_send_sync_debug<T: Send + Sync + Debug + 'static>() {}
+const fn assert_value_type<T: Send + Sync + Debug + Clone + Copy + PartialEq + Eq + Hash + 'static>()
+{
+}
+const fn assert_repo_type<T: Send + Sync + Debug + Clone + PartialEq + Eq + Default + 'static>() {}
+const fn assert_error_type<
+    T: Error + Display + Send + Sync + Debug + Clone + Copy + PartialEq + Eq + Hash + 'static,
+>() {
+}
+const fn assert_default<T: Default>() {}
+
+const _: () = {
+    assert_value_type::<CalculationEntry>();
+    assert_value_type::<AddRequest>();
+    assert_value_type::<AddResponse>();
+    assert_error_type::<MathError>();
+    assert_repo_type::<InMemoryMathRepository>();
+    assert_send_sync_debug::<Box<dyn MathRepository>>();
+    assert_send_sync_debug::<MathService>();
+    assert_send_sync_debug::<MathController>();
+    assert_send_sync_debug::<MathModule>();
+    assert_default::<MathModule>();
+};
+
+#[test]
+fn public_error_enforces_non_exhaustive_and_good_err_contracts() {
+    let errors = [
+        MathError::OperandOutOfBounds {
+            limit: 1_000_000_000,
+        },
+        MathError::Overflow,
+    ];
+    for err in errors {
+        // Requires #[non_exhaustive]; removing it trips `unreachable_patterns` under `-D warnings`.
+        let label = match err {
+            MathError::OperandOutOfBounds { .. } => "bounds",
+            MathError::Overflow => "overflow",
+            _ => "unknown",
+        };
+        assert_ne!(label, "unknown", "known MathError variant must match");
+
+        let display = err.to_string();
+        assert_ne!(display, "", "Display output must not be empty");
+        assert!(
+            !display.ends_with('.'),
+            "Display message must not end with punctuation: {display}"
+        );
+        assert!(
+            display.chars().next().is_some_and(char::is_lowercase),
+            "Display message must start lowercase: {display}"
+        );
+        assert_ne!(
+            format!("{err:?}"),
+            "",
+            "Debug output must not be empty"
+        );
+    }
+}
 
 #[test]
 fn core_never_depends_on_xtask() {
@@ -75,6 +143,43 @@ fn workspace_locks_immutable_lint_policy() {
         "as_conversions = \"warn\"",
         "cast_possible_truncation = \"warn\"",
         "cast_sign_loss = \"warn\"",
+        "missing_copy_implementations = \"warn\"",
+        "trivial_casts = \"warn\"",
+        "trivial_numeric_casts = \"warn\"",
+        "meta_variable_misuse = \"warn\"",
+        "unused_lifetimes = \"warn\"",
+        "unused_import_braces = \"warn\"",
+        "non_ascii_idents = \"warn\"",
+        "[workspace.lints.rustdoc]",
+        "broken_intra_doc_links = \"warn\"",
+        "private_intra_doc_links = \"warn\"",
+        "missing_crate_level_docs = \"warn\"",
+        "private_doc_tests = \"warn\"",
+        "invalid_codeblock_attributes = \"warn\"",
+        "invalid_rust_codeblocks = \"warn\"",
+        "invalid_html_tags = \"warn\"",
+        "bare_urls = \"warn\"",
+        "redundant_explicit_links = \"warn\"",
+        "unescaped_backticks = \"warn\"",
+        "unimplemented = \"warn\"",
+        "map_err_ignore = \"warn\"",
+        "get_unwrap = \"warn\"",
+        "unwrap_in_result = \"warn\"",
+        "fallible_impl_from = \"warn\"",
+        "derive_partial_eq_without_eq = \"warn\"",
+        "same_name_method = \"warn\"",
+        "partial_pub_fields = \"warn\"",
+        "rest_pat_in_fully_bound_structs = \"warn\"",
+        "empty_structs_with_brackets = \"warn\"",
+        "empty_enum_variants_with_brackets = \"warn\"",
+        "rc_mutex = \"warn\"",
+        "mutex_atomic = \"warn\"",
+        "mutex_integer = \"warn\"",
+        "mem_forget = \"warn\"",
+        "lossy_float_literal = \"warn\"",
+        "negative_feature_names = \"warn\"",
+        "redundant_feature_names = \"warn\"",
+        "wildcard_dependencies = \"warn\"",
     ];
 
     for entry in required_entries {
@@ -107,4 +212,30 @@ fn workspace_locks_clippy_toml() {
             "clippy.toml missing required policy setting: {entry}"
         );
     }
+}
+
+#[test]
+fn xtask_locks_doc_and_doctest_gates() {
+    let main_rs = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(|p| p.parent())
+        .expect("workspace root")
+        .join("crates/xtask/src/main.rs");
+    let content = fs::read_to_string(main_rs).expect("read xtask main.rs");
+    for token in [
+        "\"-D warnings\"",
+        "RUSTDOCFLAGS",
+        "\"--doc\"",
+        "\"--all-features\"",
+        "\"--no-deps\"",
+    ] {
+        assert!(
+            content.contains(token),
+            "xtask validate must keep gate token: {token}"
+        );
+    }
+    assert!(
+        !content.contains("cargo fmt") && !content.contains("\"fmt\""),
+        "formatters must never run in xtask validate"
+    );
 }

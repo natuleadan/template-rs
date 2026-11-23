@@ -65,3 +65,9 @@ When scaling into a multi-crate or multi-service workspace, adopt the Cargo work
 - **Pinned MSRV**: `[workspace.package]` enforces `rust-version = "1.85"` across all workspace crates.
 - **Immutable Safety & Clippy Policy**: `[workspace.lints]` forbids `unsafe_code` (`unsafe_code = "forbid"`) and enforces strict Rust/Clippy rules (`missing_docs`, `missing_debug_implementations`, `unreachable_pub`, `unwrap_used`, `as_conversions`, `print_stdout`, `print_stderr`, `allow_attributes`, and `clippy.toml` with `max-fn-params-bools = 0`).
 - **CI Execution & Tripwires**: `lint` runs `cargo clippy --workspace --all-targets --all-features -- -D warnings`, and `crates/core/tests/architecture.rs` verifies that `Cargo.toml` and `clippy.toml` lint settings are never removed or weakened.
+
+## Public API Contracts
+
+- **Typed Errors**: Domain failures use a `#[non_exhaustive]` enum implementing `Display` and `std::error::Error`, never string errors.
+- **Common Traits**: Public value types derive `Debug`, `Clone`, `Copy`, `PartialEq`, `Eq`, and `Hash`; shared collaborators are `Send + Sync`.
+- **Compile-Time Locks**: `crates/core/tests/architecture.rs` asserts these trait bounds at compile time, so removing one fails the build.

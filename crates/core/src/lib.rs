@@ -1,8 +1,26 @@
 //! Minimal workspace core library with layered modular domains.
+//!
+//! # Examples
+//!
+//! ```
+//! use template_core::modules::math::MathModule;
+//! use template_core::modules::math::dto::MathError;
+//!
+//! let mut module = MathModule::new();
+//! let res = module.controller.handle_add(15, 27)?;
+//! assert_eq!(res.sum, 42);
+//! # Ok::<(), MathError>(())
+//! ```
 
 pub mod modules;
 
 /// Returns the crate identifier for smoke verification.
+///
+/// # Examples
+///
+/// ```
+/// assert_eq!(template_core::crate_name(), "template-core");
+/// ```
 #[must_use]
 pub const fn crate_name() -> &'static str {
     "template-core"

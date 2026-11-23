@@ -56,9 +56,9 @@ cargo xtask release --check  # Verify Cargo.toml version matches CHANGELOG.md
 
 | Gate | Implementation | Purpose |
 | :--- | :--- | :--- |
-| `lint` | `cargo clippy --workspace --all-targets --all-features -- -D warnings` | Strict zero-warning static lints (`[workspace.lints]` + `clippy.toml`) |
+| `lint` | `cargo clippy --workspace --all-targets --all-features -- -D warnings` + `cargo doc -D warnings` | Strict zero-warning static lints and rustdoc link/example checks |
 | `typecheck` | `cargo check --workspace --all-targets` | Workspace type verification |
-| `unit tests` | `cargo test --workspace --lib` | Fast unit test execution |
+| `unit tests` | `cargo test --workspace --lib` + `--doc` | Fast unit tests and runnable documentation examples |
 | `integration and architecture tests` | `cargo test --workspace --test '*' --doc` | Integration flows and layer boundaries |
 | `cooldown` | `cargo --config 'resolver.min-publish-age="3 days"'` | 3-day package release cooldown |
 | `hygiene` | `crates/xtask/src/hygiene.rs` | 500-line limit, anti-leak, shell syntax |

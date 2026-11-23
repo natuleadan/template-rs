@@ -1,3 +1,3 @@
-//! Domain modules following layered modular layered boundaries.
+//! Domain modules enforcing strict layered boundaries.
 
 pub mod math;

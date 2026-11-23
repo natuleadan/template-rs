@@ -47,6 +47,7 @@ For authorized maintainers:
 When creating an operational repository from this template:
 1. Update `.github/CODEOWNERS` with your GitHub handle or maintainers team.
 2. In repository settings, add a `main-protection` ruleset requiring PR from `dev`, code owner review, passing status checks (`validate`), and rebase-only merge.
+3. Point the `CHANGE ME` URL in `.github/ISSUE_TEMPLATE/config.yml` to your own `SECURITY.md`.
 
 ## Repository Documentation Standards
 

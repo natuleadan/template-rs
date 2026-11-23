@@ -11,7 +11,7 @@ Technical operating rules for this Rust repository template.
 
 - Minimum Supported Rust Version (MSRV): **`rust-version = "1.85"`** (Rust 2024 edition).
 - Enable hooks locally with `git config core.hooksPath .githooks` and run `cargo xtask validate` (`TOTAL PASS=8 FAIL=0`) before opening or updating any pull request.
-- Clippy policy (`[workspace.lints]` in `Cargo.toml` and `clippy.toml` with `max-fn-params-bools = 0`) is enforced via `cargo clippy --workspace --all-targets --all-features -- -D warnings`. `unsafe_code = "forbid"` must never be weakened to `warn` or `allow`; immutable policy checks live in `crates/core/tests/architecture.rs`.
+- Clippy policy (`[workspace.lints]` in `Cargo.toml` and `clippy.toml` with `max-fn-params-bools = 0`) is enforced via `cargo clippy --workspace --all-targets --all-features -- -D warnings`; rustdoc policy (`[workspace.lints.rustdoc]`) via `RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps --all-features`, and every public item carries a runnable doc example (`cargo test --workspace --doc`). `unsafe_code = "forbid"` must never be weakened to `warn` or `allow`; immutable policy and public-API trait contracts (`Send + Sync`, `Debug`, `Error`, `#[non_exhaustive]`) live in `crates/core/tests/architecture.rs`.
 - Do not run `cargo fmt` or automated code formatters in hooks, CI, or pre-commit steps.
 
 ## 3. Code Layout & Architecture

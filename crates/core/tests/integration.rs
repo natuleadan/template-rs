@@ -4,6 +4,7 @@ use std::fs;
 use std::path::Path;
 use template_core::crate_name;
 use template_core::modules::math::MathModule;
+use template_core::modules::math::dto::MathError;
 
 #[test]
 fn public_api_contract_is_stable() {
@@ -21,7 +22,8 @@ fn math_module_integration_and_validation() {
         .controller
         .handle_add(2_000_000_000, 1)
         .expect_err("out-of-bounds operand must fail");
-    assert_ne!(err, "");
+    assert!(matches!(err, MathError::OperandOutOfBounds { .. }));
+    assert_ne!(err.to_string(), "");
 }
 
 #[test]
