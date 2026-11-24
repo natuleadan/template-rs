@@ -5,3 +5,4 @@ echo "pre-commit: cargo clippy"
 cargo clippy --workspace --all-targets --all-features -- -D warnings
 echo "pre-commit: unit tests"
 cargo test --workspace --lib
+cargo xtask notices --check
